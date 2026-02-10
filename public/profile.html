@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EduForge — Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="auth-body">
+    <div class="noise"></div>
+    <header class="nav compact">
+      <a class="logo" href="/">EduForge</a>
+      <div class="links">
+        <a href="/">Home</a>
+        <a href="/login.html">Sign in</a>
+      </div>
+    </header>
+
+    <main class="auth">
+      <section class="auth-card">
+        <h1>Your profile</h1>
+        <p>Loaded from <code>/api/users/profile</code> using your saved token.</p>
+        <form id="profile-form" class="auth-form">
+          <label>
+            Full name
+            <input type="text" name="username" placeholder="Aruzhan Sultanova" />
+          </label>
+          <label>
+            Date of birth
+            <input type="date" name="dateOfBirth" />
+          </label>
+          <label>
+            Phone number
+            <input type="tel" name="phoneNumber" placeholder="+7 777 123 45 67" />
+          </label>
+          <label>
+            Email
+            <input type="email" name="email" readonly />
+          </label>
+          <button class="primary full" type="submit">Save profile</button>
+        </form>
+
+        <div class="profile-separator"></div>
+
+        <h2 class="profile-subtitle">Change password</h2>
+        <form id="password-form" class="auth-form">
+          <label>
+            Current password
+            <input type="password" name="currentPassword" required />
+          </label>
+          <label>
+            New password
+            <input type="password" name="newPassword" required />
+          </label>
+          <button class="secondary full" type="submit">Update password</button>
+        </form>
+
+        <div class="profile-actions">
+          <button id="logout-btn" class="ghost">Log out</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

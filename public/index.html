@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EduForge — Online Education Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="noise"></div>
+    <header class="nav">
+      <div class="logo">EduForge</div>
+      <nav class="links">
+        <a href="#features">Features</a>
+        <a href="#courses">Courses</a>
+        <a href="#stats">Outcomes</a>
+        <a href="#cta">Get Started</a>
+      </nav>
+      <a class="ghost" href="/login.html">Sign In</a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Built in Kazakhstan • Global-ready</p>
+          <h1>Learn faster with smart, structured courses.</h1>
+          <p class="lead">
+            A focused education platform with teacher-grade tooling, student
+            progress tracking, and clean APIs powering the experience.
+          </p>
+          <div class="hero-actions">
+            <a class="primary" href="/register.html">Create Your First Course</a>
+            <button class="secondary">Explore Catalog</button>
+          </div>
+          <div class="hero-meta">
+            <div>
+              <span class="meta-value">120+</span>
+              <span class="meta-label">Active courses</span>
+            </div>
+            <div>
+              <span class="meta-value">4.8/5</span>
+              <span class="meta-label">Learner rating</span>
+            </div>
+            <div>
+              <span class="meta-value">35k</span>
+              <span class="meta-label">Lessons completed</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-card">
+          <div class="card-header">
+            <span>Teacher console</span>
+            <span class="pill">Live</span>
+          </div>
+          <div class="card-body">
+            <div class="metric">
+              <span>Enrollment</span>
+              <strong>+18%</strong>
+            </div>
+            <div class="metric">
+              <span>Avg completion</span>
+              <strong>76%</strong>
+            </div>
+            <div class="timeline">
+              <div class="timeline-row">
+                <span class="dot"></span>
+                <div>
+                  <p>Assignment: REST APIs</p>
+                  <small>Due in 2 days</small>
+                </div>
+              </div>
+              <div class="timeline-row">
+                <span class="dot"></span>
+                <div>
+                  <p>Quiz: Mongo Aggregations</p>
+                  <small>12 submissions</small>
+                </div>
+              </div>
+              <div class="timeline-row">
+                <span class="dot"></span>
+                <div>
+                  <p>Lesson: JWT Security</p>
+                  <small>98% watched</small>
+                </div>
+              </div>
+            </div>
+            <button class="primary full">Open Dashboard</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="features">
+        <div class="section-title">
+          <h2>Designed for teachers and students</h2>
+          <p>
+            Everything you need for structured learning: role-based access,
+            assignments, and progress insights.
+          </p>
+        </div>
+        <div class="feature-grid">
+          <article>
+            <h3>Role-based access</h3>
+            <p>Students, teachers, and admins get clear, secure workflows.</p>
+          </article>
+          <article>
+            <h3>Course creation</h3>
+            <p>Publish courses with keys, lessons, and milestones.</p>
+          </article>
+          <article>
+            <h3>Assignments</h3>
+            <p>Deadlines, submissions, and grading all in one place.</p>
+          </article>
+          <article>
+            <h3>Progress tracking</h3>
+            <p>See progress by course, cohort, and individual learner.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="courses" class="courses">
+        <div class="section-title">
+          <h2>Popular learning tracks</h2>
+          <p>Quick-start paths for backend, data, and product teams.</p>
+        </div>
+        <div class="course-grid">
+          <article class="course-card">
+            <span class="tag">Backend</span>
+            <h3>Node.js API Mastery</h3>
+            <p>Auth, MongoDB, testing, and deployment essentials.</p>
+            <div class="course-meta">
+              <span>12 weeks</span>
+              <span>Intermediate</span>
+            </div>
+          </article>
+          <article class="course-card">
+            <span class="tag">Data</span>
+            <h3>Mongo Aggregations</h3>
+            <p>Turn raw data into metrics and dashboards.</p>
+            <div class="course-meta">
+              <span>6 weeks</span>
+              <span>Advanced</span>
+            </div>
+          </article>
+          <article class="course-card">
+            <span class="tag">Security</span>
+            <h3>JWT & Access Control</h3>
+            <p>Secure APIs with roles, tokens, and audits.</p>
+            <div class="course-meta">
+              <span>4 weeks</span>
+              <span>Intermediate</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="stats" class="stats">
+        <div class="stat-card">
+          <h3>92%</h3>
+          <p>Learners finish at least 80% of content</p>
+        </div>
+        <div class="stat-card">
+          <h3>3.4x</h3>
+          <p>Faster onboarding for new engineers</p>
+        </div>
+        <div class="stat-card">
+          <h3>48h</h3>
+          <p>Average time to first assignment submission</p>
+        </div>
+      </section>
+
+      <section id="cta" class="cta">
+        <div>
+          <h2>Ship your first cohort this week</h2>
+          <p>
+            Launch fast with prebuilt flows and iterate with real-time
+            analytics.
+          </p>
+        </div>
+        <button class="primary">Start Free</button>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>© 2026 EduForge. Built for the Education System API.</span>
+      <div class="links">
+        <a href="#">Docs</a>
+        <a href="#">Status</a>
+        <a href="#">Support</a>
+      </div>
+    </footer>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EduForge — Sign In</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="auth-body">
+    <div class="noise"></div>
+    <header class="nav compact">
+      <a class="logo" href="/">EduForge</a>
+      <div class="links">
+        <a href="/">Home</a>
+        <a href="/register.html">Create account</a>
+      </div>
+    </header>
+
+    <main class="auth">
+      <section class="auth-card">
+        <h1>Welcome back</h1>
+        <p>Sign in to manage courses, assignments, and students.</p>
+        <form id="login-form" class="auth-form">
+          <label>
+            Email
+            <input type="email" name="email" placeholder="you@example.com" required />
+          </label>
+          <label>
+            Password
+            <input type="password" name="password" placeholder="••••••••" required />
+          </label>
+          <button class="primary full" type="submit">Sign In</button>
+        </form>
+        <p class="auth-footer">
+          New here? <a href="/register.html">Create an account</a>
+        </p>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>
