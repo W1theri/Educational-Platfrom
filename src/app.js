@@ -8,7 +8,11 @@ const path = require("node:path");
 const app = express();
 
 app.use(express.json());
-app.use(cors())
+app.use(cors({
+    origin: '*', // Allow all origins for development
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.static(path.join(__dirname, "../public")));
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "../public/index.html"));

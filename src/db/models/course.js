@@ -31,7 +31,7 @@ const courseSchema = new mongoose.Schema(
         },
         category: {
             type: String,
-            enum: ['Backend', 'Frontend', 'Data', 'Security', 'DevOps', 'Mobile', 'Other'],
+            enum: ['Backend', 'Frontend', 'Data', 'Security', 'DevOps', 'Mobile', 'Development', 'Business', 'Design', 'Marketing', 'Other'],
             default: 'Other',
         },
         level: {
@@ -41,7 +41,7 @@ const courseSchema = new mongoose.Schema(
         },
         duration: {
             type: String,
-            default: null, 
+            default: null,
         },
     },
     {
