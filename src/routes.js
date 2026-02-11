@@ -6,6 +6,9 @@ const assignmentRoutes = require("./modules/assignments/assignments.routes");
 const lessonRoutes = require("./modules/lessons/lessons.routes");
 const quizRoutes = require("./modules/quizzes/quizzes.routes");
 const resourceRoutes = require("./modules/resources/resources.routes");
+const gradeRoutes = require("./modules/grades/grades.routes");
+
+const adminRoutes = require("./modules/admin/admin.routes");
 
 const router = express.Router();
 
@@ -16,5 +19,8 @@ router.use("/assignments", assignmentRoutes);
 router.use("/lessons", lessonRoutes);
 router.use("/quizzes", quizRoutes);
 router.use("/resources", resourceRoutes);
+router.use("/grades", gradeRoutes);
+router.use("/admin", adminRoutes);
 
 module.exports = router;
+

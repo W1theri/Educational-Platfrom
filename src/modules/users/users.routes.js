@@ -8,4 +8,9 @@ router.put("/profile", auth, controller.updateProfile);
 router.put("/profile/password", auth, controller.changePassword);
 router.get("/:id", auth, requireRoles("admin"), controller.getUserById);
 
+// Admin routes
+router.get("/", auth, requireRoles("admin"), controller.getAllUsers);
+router.put("/:id/admin", auth, requireRoles("admin"), controller.adminUpdateUser);
+router.put("/:id/reset-password", auth, requireRoles("admin"), controller.adminResetPassword);
+
 module.exports = router;

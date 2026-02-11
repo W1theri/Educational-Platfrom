@@ -4,9 +4,21 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import CreateCourse from './pages/teacher/CreateCourse';
+import ManageCourse from './pages/teacher/ManageCourse';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AssignmentsOverview from './pages/teacher/AssignmentsOverview';
+import SubmissionReview from './pages/teacher/SubmissionReview';
+import GradeBook from './pages/student/GradeBook';
 
 import BrowseCourses from './pages/BrowseCourses';
 import CourseDetail from './pages/CourseDetail';
+
+const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { user, isAuthenticated, isLoading } = useAuth();
+    if (isLoading) return <div>Loading...</div>;
+    if (!isAuthenticated || user?.role !== 'admin') return <Navigate to="/dashboard" replace />;
+    return <>{children}</>;
+};
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { isAuthenticated, isLoading } = useAuth();
@@ -47,6 +59,38 @@ function App() {
                         }
                     />
                     <Route
+                        path="/teacher/manage-course/:id"
+                        element={
+                            <ProtectedRoute>
+                                <ManageCourse />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/teacher/courses/:courseId/assignments"
+                        element={
+                            <ProtectedRoute>
+                                <AssignmentsOverview />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/teacher/assignments/:assignmentId/review"
+                        element={
+                            <ProtectedRoute>
+                                <SubmissionReview />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/student/gradebook"
+                        element={
+                            <ProtectedRoute>
+                                <GradeBook />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
                         path="/courses"
                         element={
                             <ProtectedRoute>
@@ -60,6 +104,14 @@ function App() {
                             <ProtectedRoute>
                                 <CourseDetail />
                             </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/admin"
+                        element={
+                            <AdminRoute>
+                                <AdminDashboard />
+                            </AdminRoute>
                         }
                     />
                 </Routes>

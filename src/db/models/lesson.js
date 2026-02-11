@@ -17,17 +17,22 @@ const lessonSchema = new mongoose.Schema(
             type: String,
             required: [true, 'Lesson content is required'],
         },
-        videoUrl: {
+        videoUrls: [{
             type: String,
             trim: true,
-            default: null,
             validate: {
                 validator: function (v) {
-                    return v === null || v.match(/^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/);
+                    return !v || v.match(/^(http(s)?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?$/);
                 },
-                message: 'Invalid video URL'
+                message: 'Invalid URL format'
             }
-        },
+        }],
+        attachments: [{
+            filename: String,
+            fileUrl: String,
+            mimetype: String,
+            size: Number
+        }],
         order: {
             type: Number,
             default: 0,
@@ -35,7 +40,21 @@ const lessonSchema = new mongoose.Schema(
         isPublished: {
             type: Boolean,
             default: true,
-        }
+        },
+        // Assignment fields
+        isAssignment: {
+            type: Boolean,
+            default: false,
+        },
+        dueDate: {
+            type: Date,
+            default: null,
+        },
+        maxGrade: {
+            type: Number,
+            default: 100,
+            min: 1,
+        },
     },
     {
         timestamps: true,

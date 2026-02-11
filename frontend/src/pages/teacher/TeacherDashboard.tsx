@@ -69,6 +69,9 @@ const TeacherDashboard: React.FC = () => {
                                 <Link to={`/courses/${course._id}`} className="flex-1 text-center py-2 text-blue-600 border border-blue-600 rounded hover:bg-blue-50">
                                     View
                                 </Link>
+                                <Link to={`/teacher/manage-course/${course._id}`} className="flex-1 text-center py-2 text-indigo-600 border border-indigo-600 rounded hover:bg-indigo-50">
+                                    Manage
+                                </Link>
                                 <button
                                     onClick={() => handleDelete(course._id)}
                                     className="flex-1 py-2 text-red-600 border border-red-600 rounded hover:bg-red-50"

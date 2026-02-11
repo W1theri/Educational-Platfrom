@@ -80,3 +80,69 @@ exports.getUserById = async (req, res) => {
         return res.status(500).json({ error: "Server error" });
     }
 };
+
+// ADMIN: Get all users with filters
+exports.getAllUsers = async (req, res) => {
+    try {
+        const { role, search } = req.query;
+        const filter = {};
+        if (role) filter.role = role;
+        if (search) {
+            filter.$or = [
+                { username: { $regex: search, $options: "i" } },
+                { email: { $regex: search, $options: "i" } },
+            ];
+        }
+
+        const users = await User.find(filter).sort({ createdAt: -1 });
+        return res.json(users);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Server error" });
+    }
+};
+
+// ADMIN: Update user
+exports.adminUpdateUser = async (req, res) => {
+    try {
+        const { username, email, role, phoneNumber } = req.body;
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        if (username) user.username = username;
+        if (email) user.email = email;
+        if (role) user.role = role;
+        if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
+
+        await user.save();
+        return res.json(user);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Server error" });
+    }
+};
+
+// ADMIN: Reset password
+exports.adminResetPassword = async (req, res) => {
+    try {
+        const { password } = req.body;
+        if (!password || password.length < 6) {
+            return res.status(400).json({ error: "Password must be at least 6 characters" });
+        }
+
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        user.password = password;
+        await user.save();
+
+        return res.json({ message: "Password reset successfully" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Server error" });
+    }
+};

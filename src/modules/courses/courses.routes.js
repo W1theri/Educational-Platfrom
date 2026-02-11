@@ -10,6 +10,7 @@ router.post('/', auth, controller.createCourse);
 router.put('/:id', auth, controller.updateCourse);
 router.delete('/:id', auth, controller.deleteCourse);
 router.post('/:id/enroll', auth, controller.enrollInCourse);
+router.get('/:id/enrollment', auth, controller.getEnrollment);
 router.get('/:id/enrollments', auth, controller.getCourseEnrollments);
 router.put('/enrollments/:enrollmentId', auth, controller.updateEnrollmentProgress);
 

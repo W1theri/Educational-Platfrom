@@ -279,3 +279,22 @@ exports.updateEnrollmentProgress = async (req, res) => {
         return res.status(400).json({ error: err.message });
     }
 };
+
+// GET ENROLLMENT FOR SPECIFIC COURSE (Student)
+exports.getEnrollment = async (req, res) => {
+    try {
+        const enrollment = await Enrollment.findOne({
+            student: req.user.id,
+            course: req.params.id
+        });
+
+        if (!enrollment) {
+            return res.status(404).json({ error: 'Enrollment not found' });
+        }
+
+        return res.json(enrollment);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Server error' });
+    }
+};

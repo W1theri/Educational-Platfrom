@@ -1,5 +1,22 @@
 const mongoose = require('mongoose');
 
+const commentSchema = new mongoose.Schema({
+    author: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
+    content: {
+        type: String,
+        required: true,
+        maxlength: 1000,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+}, { _id: true });
+
 const submissionSchema = new mongoose.Schema({
     student: {
         type: mongoose.Schema.Types.ObjectId,
@@ -7,6 +24,10 @@ const submissionSchema = new mongoose.Schema({
         required: true,
     },
     fileUrl: {
+        type: String,
+        default: null,
+    },
+    filename: {
         type: String,
         default: null,
     },
@@ -24,6 +45,7 @@ const submissionSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
+    comments: [commentSchema],
     submittedAt: {
         type: Date,
         default: Date.now,
@@ -46,6 +68,11 @@ const assignmentSchema = new mongoose.Schema(
             type: String,
             required: [true, 'Assignment description is required'],
             maxlength: 2000,
+        },
+        lesson: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Lesson',
+            required: [true, 'Lesson is required'],
         },
         course: {
             type: mongoose.Schema.Types.ObjectId,
@@ -72,6 +99,7 @@ const assignmentSchema = new mongoose.Schema(
 );
 
 assignmentSchema.index({ course: 1 });
+assignmentSchema.index({ lesson: 1 });
 assignmentSchema.index({ dueDate: 1 });
 
 module.exports = mongoose.model('Assignment', assignmentSchema);
