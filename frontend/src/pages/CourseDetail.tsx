@@ -26,7 +26,7 @@ interface Lesson {
 
 interface Submission {
     _id: string;
-    student: string;
+    student: string | { _id: string };
     content?: string;
     fileUrl?: string;
     filename?: string;
@@ -80,6 +80,20 @@ const CourseDetail: React.FC = () => {
     const [submissionFiles, setSubmissionFiles] = useState<Record<string, File | null>>({});
     const [submitting, setSubmitting] = useState<Record<string, boolean>>({});
 
+    const normalizeCompletedLessons = (completedLessons: Array<string | { _id: string }> = []) => {
+        return completedLessons
+            .map((lesson) => (typeof lesson === 'string' ? lesson : lesson?._id))
+            .filter((lessonId): lessonId is string => Boolean(lessonId));
+    };
+
+    const isLessonCompleted = (lessonId: string) => {
+        return enrollment?.completedLessons.some((completedId) => completedId.toString() === lessonId) ?? false;
+    };
+
+    const getSubmissionStudentId = (submission: Submission) => {
+        return typeof submission.student === 'string' ? submission.student : submission.student?._id;
+    };
+
     useEffect(() => {
         const fetchCourseData = async () => {
             try {
@@ -114,7 +128,7 @@ const CourseDetail: React.FC = () => {
                             setEnrollment({
                                 _id: currentCourseEnrollment.enrollmentId,
                                 progress: currentCourseEnrollment.progress,
-                                completedLessons: fullEnrollRes.data.completedLessons || []
+                                completedLessons: normalizeCompletedLessons(fullEnrollRes.data.completedLessons || [])
                             });
                         }
                     }
@@ -146,12 +160,49 @@ const CourseDetail: React.FC = () => {
         fetchCourseData();
     }, [id, user]);
 
+    useEffect(() => {
+        if (user?.role !== 'student' || !enrollment) return;
+
+        const submittedAssignmentLessonIds = lessons
+            .filter((lesson) => {
+                if (!lesson.isAssignment) return false;
+                const assignment = assignments[lesson._id];
+                if (!assignment) return false;
+                return Boolean(getStudentSubmission(assignment));
+            })
+            .map((lesson) => lesson._id)
+            .filter((lessonId) => !isLessonCompleted(lessonId));
+
+        if (submittedAssignmentLessonIds.length === 0) return;
+
+        const autoMarkSubmittedAssignmentsAsDone = async () => {
+            for (const lessonId of submittedAssignmentLessonIds) {
+                try {
+                    const response = await api.post(`/lessons/${lessonId}/complete`);
+                    setEnrollment((prev) =>
+                        prev
+                            ? {
+                                ...prev,
+                                completedLessons: normalizeCompletedLessons(response.data.completedLessons),
+                                progress: response.data.progress,
+                            }
+                            : null
+                    );
+                } catch (err) {
+                    console.error(`Failed to auto-complete lesson ${lessonId}`, err);
+                }
+            }
+        };
+
+        autoMarkSubmittedAssignmentsAsDone();
+    }, [assignments, lessons, user?.role, enrollment]);
+
     const handleToggleComplete = async (lessonId: string) => {
         try {
             const response = await api.post(`/lessons/${lessonId}/complete`);
             setEnrollment(prev => prev ? {
                 ...prev,
-                completedLessons: response.data.completedLessons,
+                completedLessons: normalizeCompletedLessons(response.data.completedLessons),
                 progress: response.data.progress
             } : null);
         } catch (err: any) {
@@ -181,6 +232,19 @@ const CourseDetail: React.FC = () => {
             const updatedAssignment = await api.get(`/assignments/lesson/${lessonId}`);
             setAssignments(prev => ({ ...prev, [lessonId]: updatedAssignment.data }));
 
+            if (!isLessonCompleted(lessonId)) {
+                const completionResponse = await api.post(`/lessons/${lessonId}/complete`);
+                setEnrollment((prev) =>
+                    prev
+                        ? {
+                            ...prev,
+                            completedLessons: normalizeCompletedLessons(completionResponse.data.completedLessons),
+                            progress: completionResponse.data.progress,
+                        }
+                        : null
+                );
+            }
+
             setSubmissionContent(prev => ({ ...prev, [lessonId]: '' }));
             setSubmissionFiles(prev => ({ ...prev, [lessonId]: null }));
 
@@ -193,7 +257,7 @@ const CourseDetail: React.FC = () => {
     };
 
     const getStudentSubmission = (assignment: Assignment): Submission | undefined => {
-        return assignment.submissions.find(s => s.student === user?._id);
+        return assignment.submissions.find((submission) => getSubmissionStudentId(submission) === user?._id);
     };
 
     const handleEnroll = async () => {
