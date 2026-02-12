@@ -33,4 +33,4 @@ yarn-error.log*
 temp/
 tmp/
 
-public/uploads
+uploads/
