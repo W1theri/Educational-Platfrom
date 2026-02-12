@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const controller = require('./assignments.controller');
 const upload = require('../../middlewares/upload.middleware');
+const auth = require('../../middlewares/auth.middleware');
 
 router.use(auth);
 

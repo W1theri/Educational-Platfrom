@@ -237,7 +237,7 @@ const CourseDetail: React.FC = () => {
                         to={`/teacher/manage-course/${course._id}`}
                         className="bg-indigo-600 text-white px-6 py-2 rounded-xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-500/20 font-bold"
                     >
-                        ⚙️ Manage Course
+                        Manage Course
                     </Link>
                 )}
             </div>
@@ -273,7 +273,7 @@ const CourseDetail: React.FC = () => {
                 <div className="mt-10 animate-fade-in">
                     <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <span className="text-3xl">📚</span> Course Materials
+                            <span className="text-3xl"></span> Course Materials
                         </div>
                         {user?.role === 'student' && enrollment && (
                             <div className="flex flex-col items-end gap-1">
@@ -307,7 +307,7 @@ const CourseDetail: React.FC = () => {
                                                 {lesson.title}
                                                 {lesson.isAssignment && (
                                                     <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full font-bold uppercase tracking-wider">
-                                                        📋 Assignment
+                                                        Assignment
                                                     </span>
                                                 )}
                                             </h3>
@@ -319,7 +319,7 @@ const CourseDetail: React.FC = () => {
                                                         : 'bg-gray-50 text-gray-400 border border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
                                                         }`}
                                                 >
-                                                    {enrollment?.completedLessons.includes(lesson._id) ? '✅ Completed' : 'Mark as Done'}
+                                                    {enrollment?.completedLessons.includes(lesson._id) ? 'Completed' : 'Mark as Done'}
                                                 </button>
                                             )}
                                         </div>

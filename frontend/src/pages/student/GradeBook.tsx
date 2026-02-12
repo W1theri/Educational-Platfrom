@@ -74,13 +74,13 @@ const GradeBook: React.FC = () => {
         } else if (grade.status === 'pending') {
             return (
                 <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-bold">
-                    ⏳ Оценивается
+                    Pending
                 </span>
             );
         } else {
             return (
                 <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-bold">
-                    ✗ Не загружено
+                    ✗ Not submitted
                 </span>
             );
         }
@@ -96,8 +96,8 @@ const GradeBook: React.FC = () => {
             <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
                 <div className="flex justify-between items-center mb-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Мой дневник</h1>
-                        <p className="text-gray-600">Просмотр оценок по всем курсам</p>
+                        <h1 className="text-3xl font-bold text-gray-900">My Gradebook</h1>
+                        <p className="text-gray-600">View grades across all courses</p>
                     </div>
                     <button
                         onClick={() => navigate('/dashboard')}
@@ -109,7 +109,7 @@ const GradeBook: React.FC = () => {
 
                 {gradebook.length === 0 ? (
                     <div className="text-center py-10 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
-                        <p className="text-gray-500">Вы пока не записаны ни на один курс</p>
+                        <p className="text-gray-500">You are not enrolled in any courses yet</p>
                     </div>
                 ) : (
                     <div>
@@ -134,7 +134,7 @@ const GradeBook: React.FC = () => {
                             <div>
                                 {selectedGradebookEntry.grades.length === 0 ? (
                                     <div className="text-center py-10 bg-gray-50 rounded-xl">
-                                        <p className="text-gray-500">В этом курсе еще нет заданий с оценками</p>
+                                        <p className="text-gray-500">This course has no assignments with grades yet</p>
                                     </div>
                                 ) : (
                                     <div className="overflow-x-auto">
@@ -142,16 +142,16 @@ const GradeBook: React.FC = () => {
                                             <thead>
                                                 <tr className="bg-gray-50 border-b border-gray-200">
                                                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                                                        Урок
+                                                        Lesson
                                                     </th>
                                                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                                                        Задание
+                                                        Assignment
                                                     </th>
                                                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                                                        Дата сдачи
+                                                        Submission date
                                                     </th>
                                                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                                                        Статус/Оценка
+                                                        Status/Grade
                                                     </th>
                                                 </tr>
                                             </thead>
@@ -208,7 +208,7 @@ const GradeBook: React.FC = () => {
                                             <p className="text-2xl font-bold text-blue-600">
                                                 {selectedGradebookEntry.grades.length}
                                             </p>
-                                            <p className="text-sm text-gray-600 font-semibold">Всего заданий</p>
+                                            <p className="text-sm text-gray-600 font-semibold">Total Assignments</p>
                                         </div>
                                         <div className="bg-green-50 p-4 rounded-lg text-center">
                                             <p className="text-2xl font-bold text-green-600">
@@ -218,7 +218,7 @@ const GradeBook: React.FC = () => {
                                                     ).length
                                                 }
                                             </p>
-                                            <p className="text-sm text-gray-600 font-semibold">Оценено</p>
+                                            <p className="text-sm text-gray-600 font-semibold">Graded</p>
                                         </div>
                                         <div className="bg-amber-50 p-4 rounded-lg text-center">
                                             <p className="text-2xl font-bold text-amber-600">
@@ -228,7 +228,7 @@ const GradeBook: React.FC = () => {
                                                     ).length
                                                 }
                                             </p>
-                                            <p className="text-sm text-gray-600 font-semibold">На проверке</p>
+                                            <p className="text-sm text-gray-600 font-semibold">Under Review</p>
                                         </div>
                                     </div>
                                 )}

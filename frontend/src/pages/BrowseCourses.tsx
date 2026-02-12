@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 
 interface Course {
@@ -11,6 +11,7 @@ interface Course {
 }
 
 const BrowseCourses: React.FC = () => {
+    const navigate = useNavigate();
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -32,7 +33,15 @@ const BrowseCourses: React.FC = () => {
 
     return (
         <div className="max-w-7xl mx-auto py-8 px-4">
-            <h2 className="text-2xl font-bold mb-6">Browse Available Courses</h2>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Browse Available Courses</h2>
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="text-gray-600 hover:text-indigo-600 font-medium"
+                >
+                    ← Back to Dashboard
+                </button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {courses.map(course => (
                     <div key={course._id} className="bg-white p-6 rounded shadow hover:shadow-lg transition flex flex-col">

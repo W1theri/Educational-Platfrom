@@ -184,14 +184,14 @@ const ManageCourse: React.FC = () => {
 
             <div className="flex justify-between items-center mb-8">
                 <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-                    <span className="text-3xl">📖</span> Lessons List
+                    <span className="text-3xl"></span> Lessons List
                 </h2>
                 <div className="flex gap-3">
                     <button
                         onClick={() => navigate(`/teacher/courses/${id}/assignments`)}
                         className="bg-amber-100 text-amber-700 px-6 py-3 rounded-2xl hover:bg-amber-200 transition font-extrabold shadow-sm flex items-center gap-2 border border-amber-200"
                     >
-                        <span>📋</span> Review Assignments
+                         Review Assignments
                     </button>
                     <button
                         onClick={() => {
@@ -212,7 +212,7 @@ const ManageCourse: React.FC = () => {
             {showForm && (
                 <div className="mb-12 p-8 bg-indigo-50/50 rounded-3xl border border-indigo-100 animate-slide-down">
                     <h3 className="text-2xl font-bold mb-6 text-indigo-900 flex items-center gap-2">
-                        {editingLessonId ? '✏️ Edit Lesson' : '✨ Create New Lesson'}
+                        {editingLessonId ? 'Edit Lesson' : 'Create New Lesson'}
                     </h3>
                     <form onSubmit={handleSubmitLesson} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -331,7 +331,7 @@ const ManageCourse: React.FC = () => {
                                     />
                                     <label htmlFor="isAssignment" className="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-6 cursor-pointer"></label>
                                 </div>
-                                <label htmlFor="isAssignment" className="text-sm font-bold text-indigo-700 cursor-pointer">📋 Маркировать как задание (Assignment)</label>
+                                <label htmlFor="isAssignment" className="text-sm font-bold text-indigo-700 cursor-pointer">Mark as an Assignment</label>
                             </div>
                         </div>
 
@@ -388,7 +388,7 @@ const ManageCourse: React.FC = () => {
                                         {lesson.title}
                                         {lesson.isAssignment && (
                                             <span className="text-[10px] bg-amber-100 text-amber-700 px-3 py-1 rounded-full font-black uppercase tracking-widest">
-                                                📋 Assignment
+                                                Assignment
                                             </span>
                                         )}
                                     </h4>
@@ -396,8 +396,8 @@ const ManageCourse: React.FC = () => {
                                         <span className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter shadow-sm border ${lesson.isPublished ? 'bg-green-50 text-green-700 border-green-100' : 'bg-gray-100 text-gray-500 border-gray-200'}`}>
                                             {lesson.isPublished ? 'Published' : 'Draft'}
                                         </span>
-                                        {lesson.videoUrls?.filter(u => u.trim()).length > 0 && <span className="text-[10px] bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-black uppercase tracking-tighter border border-blue-100 shadow-sm">🔗 {lesson.videoUrls.filter(u => u.trim()).length} Links</span>}
-                                        {lesson.attachments?.length > 0 && <span className="text-[10px] bg-purple-50 text-purple-700 px-3 py-1 rounded-full font-black uppercase tracking-tighter border border-purple-100 shadow-sm">📎 {lesson.attachments.length} Files</span>}
+                                        {lesson.videoUrls?.filter(u => u.trim()).length > 0 && <span className="text-[10px] bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-black uppercase tracking-tighter border border-blue-100 shadow-sm">{lesson.videoUrls.filter(u => u.trim()).length} Links</span>}
+                                        {lesson.attachments?.length > 0 && <span className="text-[10px] bg-purple-50 text-purple-700 px-3 py-1 rounded-full font-black uppercase tracking-tighter border border-purple-100 shadow-sm">{lesson.attachments.length} Files</span>}
                                     </div>
                                 </div>
                             </div>

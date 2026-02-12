@@ -172,7 +172,7 @@ const SubmissionReview: React.FC = () => {
                                         </div>
                                     ) : (
                                         <div className="mt-2 inline-block px-2 py-1 bg-amber-100 text-amber-700 rounded text-xs font-bold">
-                                            ⏳ Pending
+                                            Pending
                                         </div>
                                     )}
                                 </div>

@@ -40,7 +40,7 @@ const StudentDashboard: React.FC = () => {
                 <h2 className="text-2xl font-bold text-gray-800">My Learning</h2>
                 <div className="flex gap-2">
                     <Link to="/student/gradebook" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
-                        📊 Мой дневник
+                        My Gradebook
                     </Link>
                     <Link to="/courses" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                         Browse Courses
