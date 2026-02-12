@@ -2,7 +2,7 @@ const router = require('express').Router();
 const controller = require('./courses.controller');
 const auth = require('../../middlewares/auth.middleware');
 
-router.get('/', controller.getAllCourses);
+router.get('/', auth, controller.getAllCourses);
 router.get('/my/courses', auth, controller.getMyCourses);
 router.get('/:id', controller.getCourse);
 

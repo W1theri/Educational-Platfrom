@@ -2,6 +2,18 @@ const Grade = require('../../db/models/grade');
 const Course = require('../../db/models/course');
 const Enrollment = require('../../db/models/enrollment');
 
+const withLateFallback = (grade) => {
+    if (!grade) return grade;
+    const plain = grade.toObject ? grade.toObject() : grade;
+    if (typeof plain.isLate === 'boolean') return plain;
+    const dueDate = plain.assignment?.dueDate ? new Date(plain.assignment.dueDate) : null;
+    const submittedAt = plain.submittedAt ? new Date(plain.submittedAt) : null;
+    return {
+        ...plain,
+        isLate: Boolean(dueDate && submittedAt && submittedAt > dueDate),
+    };
+};
+
 // GET STUDENT GRADES FOR A COURSE
 exports.getStudentGradesForCourse = async (req, res) => {
     try {
@@ -17,7 +29,7 @@ exports.getStudentGradesForCourse = async (req, res) => {
             .populate('assignment', 'title maxGrade')
             .sort({ 'lesson.order': 1 });
 
-        return res.json(grades);
+        return res.json(grades.map(withLateFallback));
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: 'Server error' });
@@ -47,7 +59,7 @@ exports.getStudentGradeBook = async (req, res) => {
                 return {
                     course: enrollment.course,
                     enrolledAt: enrollment.enrolledAt,
-                    grades: grades,
+                    grades: grades.map(withLateFallback),
                 };
             })
         );
@@ -82,7 +94,8 @@ exports.getCourseGrades = async (req, res) => {
 
         // Group by student
         const studentGrades = {};
-        grades.forEach((grade) => {
+        grades.forEach((gradeDoc) => {
+            const grade = withLateFallback(gradeDoc);
             const studentId = grade.student._id.toString();
             if (!studentGrades[studentId]) {
                 studentGrades[studentId] = {

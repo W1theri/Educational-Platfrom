@@ -19,6 +19,7 @@ interface Grade {
     _id: string;
     grade: number | null;
     status: 'not_submitted' | 'pending' | 'graded';
+    isLate?: boolean;
     lesson: Lesson;
     assignment: Assignment;
     submittedAt: string | null;
@@ -68,22 +69,36 @@ const GradeBook: React.FC = () => {
                     <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-bold">
                         {grade.grade}/{grade.assignment.maxGrade}
                     </span>
-                    <span className="text-xs text-gray-500">✓ Graded</span>
+                    <span className="text-xs text-gray-500">Graded</span>
+                    {grade.isLate && (
+                        <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
+                            Late
+                        </span>
+                    )}
                 </div>
             );
-        } else if (grade.status === 'pending') {
+        }
+
+        if (grade.status === 'pending') {
             return (
-                <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-bold">
-                    Pending
-                </span>
-            );
-        } else {
-            return (
-                <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-bold">
-                    ✗ Not submitted
-                </span>
+                <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-bold">
+                        Pending
+                    </span>
+                    {grade.isLate && (
+                        <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
+                            Late
+                        </span>
+                    )}
+                </div>
             );
         }
+
+        return (
+            <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-bold">
+                Not submitted
+            </span>
+        );
     };
 
     if (loading) return <div className="p-8 text-center">Loading gradebook...</div>;
@@ -242,3 +257,4 @@ const GradeBook: React.FC = () => {
 };
 
 export default GradeBook;
+

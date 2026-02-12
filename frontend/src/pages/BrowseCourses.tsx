@@ -58,7 +58,7 @@ const BrowseCourses: React.FC = () => {
                 ))}
             </div>
             {courses.length === 0 && (
-                <p className="text-center text-gray-500">No public courses available yet.</p>
+                <p className="text-center text-gray-500">No courses available yet.</p>
             )}
         </div>
     );

@@ -15,7 +15,7 @@ interface Comment {
 
 interface Submission {
     _id: string;
-    student: {
+    student: string | {
         _id: string;
         username: string;
         email: string;
@@ -27,6 +27,7 @@ interface Submission {
     feedback?: string;
     comments: Comment[];
     submittedAt: string;
+    isLate?: boolean;
     gradedAt?: string | null;
 }
 
@@ -37,10 +38,22 @@ interface Assignment {
     maxGrade: number;
     dueDate: string;
     submissions: Submission[];
+    course?: string | { _id: string };
     lesson: {
         _id: string;
         title: string;
     };
+}
+
+interface EnrollmentStudent {
+    _id: string;
+    username: string;
+    email: string;
+}
+
+interface CourseEnrollment {
+    _id: string;
+    student: EnrollmentStudent;
 }
 
 const SubmissionReview: React.FC = () => {
@@ -54,12 +67,51 @@ const SubmissionReview: React.FC = () => {
     const [feedbackInput, setFeedbackInput] = useState('');
     const [commentInput, setCommentInput] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [studentInfoById, setStudentInfoById] = useState<Record<string, EnrollmentStudent>>({});
+
+    const getStudentId = (submission: Submission) =>
+        typeof submission.student === 'string' ? submission.student : submission.student._id;
+
+    const getStudentName = (submission: Submission) =>
+        typeof submission.student === 'string'
+            ? (studentInfoById[submission.student]?.username || 'Student')
+            : submission.student.username;
+
+    const getStudentEmail = (submission: Submission) =>
+        typeof submission.student === 'string'
+            ? (studentInfoById[submission.student]?.email || '')
+            : submission.student.email;
+
+    const isSubmissionLate = (submission: Submission) => {
+        if (typeof submission.isLate === 'boolean') return submission.isLate;
+        return new Date(submission.submittedAt) > new Date(assignment?.dueDate || 0);
+    };
 
     useEffect(() => {
         const fetchAssignment = async () => {
             try {
                 const response = await api.get(`/assignments/${assignmentId}`);
                 setAssignment(response.data);
+
+                const hasUnpopulatedStudents = response.data.submissions?.some(
+                    (submission: Submission) => typeof submission.student === 'string'
+                );
+                const courseId =
+                    typeof response.data.course === 'string'
+                        ? response.data.course
+                        : response.data.course?._id;
+
+                if (hasUnpopulatedStudents && courseId) {
+                    const enrollmentsRes = await api.get(`/courses/${courseId}/enrollments`);
+                    const infoMap: Record<string, EnrollmentStudent> = {};
+                    (enrollmentsRes.data as CourseEnrollment[]).forEach((enrollment) => {
+                        if (enrollment.student?._id) {
+                            infoMap[enrollment.student._id] = enrollment.student;
+                        }
+                    });
+                    setStudentInfoById(infoMap);
+                }
+
                 if (response.data.submissions.length > 0) {
                     selectSubmission(response.data.submissions[0]);
                 }
@@ -84,7 +136,8 @@ const SubmissionReview: React.FC = () => {
         setSubmitting(true);
         try {
             const response = await api.put(`/assignments/${assignmentId}/grade`, {
-                studentId: selectedSubmission.student._id,
+                submissionId: selectedSubmission._id,
+                studentId: getStudentId(selectedSubmission),
                 grade: parseFloat(gradeInput),
                 feedback: feedbackInput,
             });
@@ -161,11 +214,16 @@ const SubmissionReview: React.FC = () => {
                                         }`}
                                 >
                                     <p className="font-semibold text-gray-900 text-sm">
-                                        {submission.student.username}
+                                        {getStudentName(submission)}
                                     </p>
                                     <p className="text-xs text-gray-500 mt-1">
                                         {new Date(submission.submittedAt).toLocaleDateString()}
                                     </p>
+                                    {isSubmissionLate(submission) && (
+                                        <div className="mt-2 inline-block px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-bold">
+                                            Late
+                                        </div>
+                                    )}
                                     {submission.grade !== null && submission.grade !== undefined ? (
                                         <div className="mt-2 inline-block px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">
                                             ✓ Graded: {submission.grade}/{assignment.maxGrade}
@@ -187,12 +245,15 @@ const SubmissionReview: React.FC = () => {
                         <div>
                             <div className="mb-6 pb-4 border-b">
                                 <h2 className="text-2xl font-bold text-gray-900">
-                                    {selectedSubmission.student.username}
+                                    {getStudentName(selectedSubmission)}
                                 </h2>
-                                <p className="text-sm text-gray-600">{selectedSubmission.student.email}</p>
+                                <p className="text-sm text-gray-600">{getStudentEmail(selectedSubmission)}</p>
                                 <p className="text-xs text-gray-500 mt-1">
                                     Submitted: {new Date(selectedSubmission.submittedAt).toLocaleString()}
                                 </p>
+                                {isSubmissionLate(selectedSubmission) && (
+                                    <p className="text-xs text-red-700 font-bold mt-1">Late submission</p>
+                                )}
                             </div>
 
                             {/* Submitted Work */}

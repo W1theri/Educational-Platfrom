@@ -62,7 +62,11 @@ exports.getAssignmentsByCourse = async (req, res) => {
 // GET SINGLE ASSIGNMENT
 exports.getAssignment = async (req, res) => {
     try {
-        const assignment = await Assignment.findById(req.params.id).populate('course', 'title teacher');
+        const assignment = await Assignment.findById(req.params.id)
+            .populate('course', 'title teacher')
+            .populate('lesson', 'title')
+            .populate('submissions.student', 'username email')
+            .populate('submissions.comments.author', 'username role');
 
         if (!assignment) {
             return res.status(404).json({ error: 'Assignment not found' });
@@ -166,12 +170,16 @@ exports.submitAssignment = async (req, res) => {
             }
         }
 
+        const submittedAt = new Date();
+        const isLate = assignment.dueDate ? submittedAt > new Date(assignment.dueDate) : false;
+
         assignment.submissions.push({
             student: req.user.id,
             content: content || null,
             fileUrl: fileUrl || null,
             filename: filename || null,
-            submittedAt: new Date(),
+            submittedAt,
+            isLate,
         });
 
         await assignment.save();
@@ -185,7 +193,8 @@ exports.submitAssignment = async (req, res) => {
                 lesson: assignment.lesson,
                 assignment: assignment._id,
                 status: 'pending',
-                submittedAt: new Date(),
+                submittedAt,
+                isLate,
             },
             { upsert: true, new: true }
         );
@@ -203,7 +212,7 @@ exports.submitAssignment = async (req, res) => {
 // GRADE SUBMISSION (Teacher only)
 exports.gradeSubmission = async (req, res) => {
     try {
-        const { studentId, grade, feedback } = req.body;
+        const { studentId, submissionId, grade, feedback } = req.body;
 
         const assignment = await Assignment.findById(req.params.id).populate('course');
 
@@ -216,9 +225,15 @@ exports.gradeSubmission = async (req, res) => {
             return res.status(403).json({ error: 'Not authorized to grade this assignment' });
         }
 
-        const submission = assignment.submissions.find(
-            (sub) => sub.student.toString() === studentId
-        );
+        let submission = null;
+
+        if (submissionId) {
+            submission = assignment.submissions.id(submissionId);
+        }
+
+        if (!submission && studentId) {
+            submission = assignment.submissions.find((sub) => sub.student.toString() === studentId);
+        }
 
         if (!submission) {
             return res.status(404).json({ error: 'Submission not found' });
@@ -243,7 +258,7 @@ exports.gradeSubmission = async (req, res) => {
 
         // Update grade record
         await Grade.findOneAndUpdate(
-            { student: studentId, assignment: assignment._id },
+            { student: submission.student, assignment: assignment._id },
             {
                 grade: grade,
                 status: 'graded',
@@ -292,6 +307,7 @@ exports.getMySubmissions = async (req, res) => {
                     grade: submission.grade,
                     feedback: submission.feedback,
                     submittedAt: submission.submittedAt,
+                    isLate: submission.isLate || (submission.submittedAt > assignment.dueDate),
                     gradedAt: submission.gradedAt,
                 },
             };

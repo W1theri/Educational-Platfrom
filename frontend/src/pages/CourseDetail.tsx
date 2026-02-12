@@ -31,6 +31,7 @@ interface Submission {
     fileUrl?: string;
     filename?: string;
     submittedAt: string;
+    isLate?: boolean;
     grade?: number;
     feedback?: string;
 }
@@ -260,6 +261,11 @@ const CourseDetail: React.FC = () => {
         return assignment.submissions.find((submission) => getSubmissionStudentId(submission) === user?._id);
     };
 
+    const isSubmissionLate = (submission: Submission, assignment: Assignment) => {
+        if (typeof submission.isLate === 'boolean') return submission.isLate;
+        return new Date(submission.submittedAt) > new Date(assignment.dueDate);
+    };
+
     const handleEnroll = async () => {
         if (!course?.isPublic && !enrollmentKey && !showKeyInput) {
             setShowKeyInput(true);
@@ -444,9 +450,16 @@ const CourseDetail: React.FC = () => {
                                                     {studentSubmission ? (
                                                         <div className="space-y-3">
                                                             <div className="flex items-center justify-between">
-                                                                <span className="text-sm text-amber-700 font-semibold px-3 py-1 bg-white rounded-full border border-amber-200">
-                                                                    Submitted on {new Date(studentSubmission.submittedAt).toLocaleDateString()}
-                                                                </span>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-sm text-amber-700 font-semibold px-3 py-1 bg-white rounded-full border border-amber-200">
+                                                                        Submitted on {new Date(studentSubmission.submittedAt).toLocaleDateString()}
+                                                                    </span>
+                                                                    {isSubmissionLate(studentSubmission, assignment) && (
+                                                                        <span className="text-xs font-bold px-2 py-1 rounded-full bg-red-100 text-red-700 border border-red-200">
+                                                                            Late
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                                 {studentSubmission.grade !== undefined && studentSubmission.grade !== null ? (
                                                                     <span className="text-lg font-bold text-indigo-600">
                                                                         Grade: {studentSubmission.grade}/{assignment.maxGrade}

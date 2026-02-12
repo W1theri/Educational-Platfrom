@@ -36,7 +36,7 @@ exports.getAllCourses = async (req, res) => {
         const { search, teacher, category, level, isPublic } = req.query;
         const filter = {};
 
-        if (isPublic === undefined || isPublic === 'true') {
+        if (isPublic === 'true') {
             filter.isPublic = true;
         } else if (isPublic === 'false') {
             filter.isPublic = false;
