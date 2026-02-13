@@ -175,7 +175,7 @@ const ManageCourse: React.FC = () => {
                     <p className="text-indigo-600 font-bold mt-1 text-lg">{course?.title}</p>
                 </div>
                 <button
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigate('/dashboard')}
                     className="bg-gray-50 text-gray-600 px-6 py-2 rounded-xl hover:bg-gray-100 transition font-bold border border-gray-200"
                 >
                     ← Back
@@ -191,15 +191,17 @@ const ManageCourse: React.FC = () => {
                         onClick={() => navigate(`/teacher/courses/${id}/assignments`)}
                         className="bg-amber-100 text-amber-700 px-6 py-3 rounded-2xl hover:bg-amber-200 transition font-extrabold shadow-sm flex items-center gap-2 border border-amber-200"
                     >
-                         Review Assignments
+                        Review Assignments
                     </button>
                     <button
                         onClick={() => {
-                            if (showForm && editingLessonId) {
+                            if (showForm) {
+                                setShowForm(false);
                                 setEditingLessonId(null);
                                 setLessonData({ title: '', content: '', videoUrls: [''], order: lessons.length + 1, isPublished: true, isAssignment: false, dueDate: '', maxGrade: 100 });
                             } else {
-                                setShowForm(!showForm);
+                                setShowForm(true);
+                                setLessonData({ title: '', content: '', videoUrls: [''], order: lessons.length + 1, isPublished: true, isAssignment: false, dueDate: '', maxGrade: 100 });
                             }
                         }}
                         className={`${showForm ? 'bg-gray-100 text-gray-600' : 'bg-indigo-600 text-white shadow-indigo-500/20 shadow-lg'} px-6 py-3 rounded-2xl hover:scale-105 active:scale-95 transition-all font-extrabold flex items-center gap-2`}

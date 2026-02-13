@@ -11,6 +11,13 @@ interface Attachment {
     size: number;
 }
 
+interface Comment {
+    _id: string;
+    content: string;
+    author: { _id: string, username: string, role: string };
+    createdAt: string;
+}
+
 interface Lesson {
     _id: string;
     title: string;
@@ -34,6 +41,7 @@ interface Submission {
     isLate?: boolean;
     grade?: number;
     feedback?: string;
+    comments?: Comment[];
 }
 
 interface Assignment {
@@ -80,6 +88,8 @@ const CourseDetail: React.FC = () => {
     const [submissionContent, setSubmissionContent] = useState<Record<string, string>>({});
     const [submissionFiles, setSubmissionFiles] = useState<Record<string, File | null>>({});
     const [submitting, setSubmitting] = useState<Record<string, boolean>>({});
+    // New state for student comments
+    const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
 
     const normalizeCompletedLessons = (completedLessons: Array<string | { _id: string }> = []) => {
         return completedLessons
@@ -90,6 +100,11 @@ const CourseDetail: React.FC = () => {
     const isLessonCompleted = (lessonId: string) => {
         return enrollment?.completedLessons.some((completedId) => completedId.toString() === lessonId) ?? false;
     };
+
+    // Calculate progress dynamically based on current lessons count
+    const calculatedProgress = enrollment && lessons.length > 0
+        ? Math.round((enrollment.completedLessons.length / lessons.length) * 100)
+        : 0;
 
     const getSubmissionStudentId = (submission: Submission) => {
         return typeof submission.student === 'string' ? submission.student : submission.student?._id;
@@ -233,18 +248,7 @@ const CourseDetail: React.FC = () => {
             const updatedAssignment = await api.get(`/assignments/lesson/${lessonId}`);
             setAssignments(prev => ({ ...prev, [lessonId]: updatedAssignment.data }));
 
-            if (!isLessonCompleted(lessonId)) {
-                const completionResponse = await api.post(`/lessons/${lessonId}/complete`);
-                setEnrollment((prev) =>
-                    prev
-                        ? {
-                            ...prev,
-                            completedLessons: normalizeCompletedLessons(completionResponse.data.completedLessons),
-                            progress: completionResponse.data.progress,
-                        }
-                        : null
-                );
-            }
+
 
             setSubmissionContent(prev => ({ ...prev, [lessonId]: '' }));
             setSubmissionFiles(prev => ({ ...prev, [lessonId]: null }));
@@ -254,6 +258,25 @@ const CourseDetail: React.FC = () => {
             alert(err.response?.data?.error || 'Failed to submit assignment');
         } finally {
             setSubmitting(prev => ({ ...prev, [lessonId]: false }));
+        }
+    };
+
+    const handleAddComment = async (lessonId: string, assignmentId: string) => {
+        const content = commentInputs[lessonId];
+        if (!content?.trim()) return;
+
+        try {
+            // Optimistically can't update easily without response, so we wait.
+            const response = await api.post(`/assignments/${assignmentId}/comment`, {
+                submissionId: getStudentSubmission(assignments[lessonId])?._id,
+                content: content
+            });
+
+            // Update assignment data with new comment
+            setAssignments(prev => ({ ...prev, [lessonId]: response.data }));
+            setCommentInputs(prev => ({ ...prev, [lessonId]: '' }));
+        } catch (err: any) {
+            alert(err.response?.data?.error || 'Failed to post comment');
         }
     };
 
@@ -347,13 +370,15 @@ const CourseDetail: React.FC = () => {
                         </div>
                         {user?.role === 'student' && enrollment && (
                             <div className="flex flex-col items-end gap-1">
-                                <span className="text-sm font-bold text-indigo-600">{enrollment.progress}% Completed</span>
-                                <div className="w-48 h-2 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
+                                <div className="w-full bg-gray-200 rounded-full h-2.5 mb-1 overflow-hidden">
                                     <div
-                                        className="h-full bg-indigo-600 transition-all duration-500"
-                                        style={{ width: `${enrollment.progress}%` }}
+                                        className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500 ease-out"
+                                        style={{ width: `${enrollment ? calculatedProgress : 0}%` }}
                                     ></div>
                                 </div>
+                                <p className="text-right text-xs text-indigo-600 font-bold">
+                                    {enrollment ? calculatedProgress : 0}% ({enrollment?.completedLessons.length || 0}/{lessons.length})
+                                </p>
                             </div>
                         )}
                     </h2>
@@ -381,7 +406,7 @@ const CourseDetail: React.FC = () => {
                                                     </span>
                                                 )}
                                             </h3>
-                                            {user?.role === 'student' && (
+                                            {user?.role === 'student' && !lesson.isAssignment && (
                                                 <button
                                                     onClick={() => handleToggleComplete(lesson._id)}
                                                     className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-bold text-xs transition-all ${enrollment?.completedLessons.includes(lesson._id)
@@ -440,78 +465,148 @@ const CourseDetail: React.FC = () => {
                                         )}
 
                                         {/* Assignment Submission Section */}
-                                        {lesson.isAssignment && assignment && user?.role === 'student' && (
-                                            <div className="mt-6 pt-6 border-t border-gray-100">
-                                                <div className="bg-amber-50 p-6 rounded-2xl border border-amber-100">
-                                                    <h4 className="font-bold text-amber-900 mb-4 flex items-center gap-2">
-                                                        <span>📤</span> Submission Status
-                                                    </h4>
+                                        {lesson.isAssignment && assignment && user?.role === 'student' && (() => {
+                                            const isOverdue = !studentSubmission && new Date() > new Date(assignment.dueDate);
+                                            console.log(`Assignment: ${assignment.title}, Due: ${new Date(assignment.dueDate).toLocaleString()}, Now: ${new Date().toLocaleString()}, Overdue: ${isOverdue}`);
 
-                                                    {studentSubmission ? (
-                                                        <div className="space-y-3">
-                                                            <div className="flex items-center justify-between">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="text-sm text-amber-700 font-semibold px-3 py-1 bg-white rounded-full border border-amber-200">
-                                                                        Submitted on {new Date(studentSubmission.submittedAt).toLocaleDateString()}
-                                                                    </span>
-                                                                    {isSubmissionLate(studentSubmission, assignment) && (
-                                                                        <span className="text-xs font-bold px-2 py-1 rounded-full bg-red-100 text-red-700 border border-red-200">
-                                                                            Late
+                                            return (
+                                                <div className="mt-6 pt-6 border-t border-gray-100">
+                                                    <div className={`p-6 rounded-2xl border ${studentSubmission && studentSubmission.grade !== undefined && studentSubmission.grade !== null
+                                                        ? 'bg-green-50 border-green-100'
+                                                        : isOverdue
+                                                            ? 'bg-red-50 border-red-100'
+                                                            : 'bg-blue-50 border-blue-100'
+                                                        }`}>
+                                                        <h4 className={`font-bold mb-4 flex items-center gap-2 ${studentSubmission && studentSubmission.grade !== undefined && studentSubmission.grade !== null
+                                                            ? 'text-green-900'
+                                                            : isOverdue
+                                                                ? 'text-red-900'
+                                                                : 'text-blue-900'
+                                                            }`}>
+                                                            <span>{studentSubmission && studentSubmission.grade !== undefined && studentSubmission.grade !== null ? '✅' : isOverdue ? '⚠️' : '📤'}</span>
+                                                            Submission Status
+                                                        </h4>
+
+                                                        {studentSubmission ? (
+                                                            <div className="space-y-3">
+                                                                <div className="flex items-center justify-between">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className={`text-sm font-semibold px-3 py-1 bg-white rounded-full border ${studentSubmission.grade !== undefined && studentSubmission.grade !== null
+                                                                            ? 'text-green-700 border-green-200'
+                                                                            : 'text-blue-700 border-blue-200'
+                                                                            }`}>
+                                                                            Submitted on {new Date(studentSubmission.submittedAt).toLocaleDateString()}
                                                                         </span>
+                                                                        {isSubmissionLate(studentSubmission, assignment) && (
+                                                                            <span className="text-xs font-bold px-2 py-1 rounded-full bg-red-100 text-red-700 border border-red-200">
+                                                                                Late
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    {studentSubmission.grade !== undefined && studentSubmission.grade !== null ? (
+                                                                        <span className="text-lg font-bold text-green-600">
+                                                                            Grade: {studentSubmission.grade}/{assignment.maxGrade}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-sm text-blue-600 font-bold animate-pulse">Pending Review</span>
                                                                     )}
                                                                 </div>
-                                                                {studentSubmission.grade !== undefined && studentSubmission.grade !== null ? (
-                                                                    <span className="text-lg font-bold text-indigo-600">
-                                                                        Grade: {studentSubmission.grade}/{assignment.maxGrade}
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="text-sm text-amber-600 font-bold animate-pulse">Pending Review</span>
+                                                                {studentSubmission.filename && (
+                                                                    <p className="text-sm text-gray-600 italic">Attached: {studentSubmission.filename}</p>
                                                                 )}
-                                                            </div>
-                                                            {studentSubmission.filename && (
-                                                                <p className="text-sm text-gray-600 italic">Attached: {studentSubmission.filename}</p>
-                                                            )}
-                                                            {studentSubmission.feedback && (
-                                                                <div className="bg-white p-4 rounded-xl border border-amber-100 mt-2">
-                                                                    <p className="text-xs font-bold text-gray-400 uppercase mb-1">Teacher Feedback</p>
-                                                                    <p className="text-sm text-gray-700">{studentSubmission.feedback}</p>
+                                                                {studentSubmission.feedback && (
+                                                                    <div className="bg-white p-4 rounded-xl border border-amber-100 mt-2">
+                                                                        <p className="text-xs font-bold text-gray-400 uppercase mb-1">Teacher Feedback</p>
+                                                                        <p className="text-sm text-gray-700">{studentSubmission.feedback}</p>
+                                                                    </div>
+
+                                                                )}
+
+                                                                {/* Student Comment Section */}
+                                                                <div className="mt-4 pt-4 border-t border-amber-200/50">
+                                                                    <h5 className="font-bold text-amber-900 text-sm mb-3">Discussion & Comments</h5>
+                                                                    {studentSubmission.comments && studentSubmission.comments.length > 0 ? (
+                                                                        <div className="space-y-3 mb-4 max-h-48 overflow-y-auto pr-2">
+                                                                            {studentSubmission.comments.map((comment) => (
+                                                                                <div key={comment._id} className={`p-3 rounded-xl text-sm ${comment.author._id === user?._id ? 'bg-amber-100 ml-8' : 'bg-white mr-8 border border-amber-100'}`}>
+                                                                                    <div className="flex justify-between items-center mb-1">
+                                                                                        <span className="font-bold text-amber-900">
+                                                                                            {comment.author.username}
+                                                                                            {comment.author.role && (
+                                                                                                <span className="text-[10px] font-normal text-amber-700/70 ml-1 uppercase border border-amber-200 rounded px-1">
+                                                                                                    {comment.author.role}
+                                                                                                </span>
+                                                                                            )}
+                                                                                        </span>
+                                                                                        <span className="text-[10px] text-amber-700/60">
+                                                                                            {new Date(comment.createdAt).toLocaleDateString()}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    <p className="text-gray-700">{comment.content}</p>
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <p className="text-xs text-amber-700/60 italic mb-3">No comments yet. You can ask for clarification here.</p>
+                                                                    )}
+
+                                                                    <div className="flex gap-2">
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder="Type a message..."
+                                                                            value={commentInputs[lesson._id] || ''}
+                                                                            onKeyDown={(e) => {
+                                                                                if (e.key === 'Enter') handleAddComment(lesson._id, assignment._id);
+                                                                            }}
+                                                                            onChange={(e) => setCommentInputs(prev => ({ ...prev, [lesson._id]: e.target.value }))}
+                                                                            className="flex-1 px-3 py-2 text-sm border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+                                                                        />
+                                                                        <button
+                                                                            onClick={() => handleAddComment(lesson._id, assignment._id)}
+                                                                            disabled={!commentInputs[lesson._id]?.trim()}
+                                                                            className="bg-amber-600 text-white px-3 py-2 rounded-lg text-sm font-bold hover:bg-amber-700 transition disabled:opacity-50"
+                                                                        >
+                                                                            Send
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
-                                                            )}
-                                                        </div>
-                                                    ) : (
-                                                        <div className="space-y-4">
-                                                            <p className="text-sm text-amber-800">Please upload your work for this lesson. Max grade: {assignment.maxGrade}. Due by: {new Date(assignment.dueDate).toLocaleString()}</p>
-                                                            <textarea
-                                                                placeholder="Add some notes for your teacher (optional)..."
-                                                                className="w-full border border-amber-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all placeholder:text-amber-300"
-                                                                rows={3}
-                                                                value={submissionContent[lesson._id] || ''}
-                                                                onChange={(e) => setSubmissionContent(prev => ({ ...prev, [lesson._id]: e.target.value }))}
-                                                            />
-                                                            <div className="flex flex-col sm:flex-row gap-3">
-                                                                <input
-                                                                    type="file"
-                                                                    className="flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-100 file:text-amber-700 hover:file:bg-amber-200"
-                                                                    onChange={(e) => setSubmissionFiles(prev => ({ ...prev, [lesson._id]: e.target.files?.[0] || null }))}
-                                                                />
-                                                                <button
-                                                                    onClick={() => handleSubmitAssignment(lesson._id, assignment._id)}
-                                                                    disabled={submitting[lesson._id] || (!submissionFiles[lesson._id] && !submissionContent[lesson._id])}
-                                                                    className="px-6 py-2 bg-amber-600 text-white font-bold rounded-full hover:bg-amber-700 transition shadow-lg shadow-amber-600/20 disabled:opacity-50 disabled:shadow-none"
-                                                                >
-                                                                    {submitting[lesson._id] ? 'Submitting...' : 'Upload Work'}
-                                                                </button>
                                                             </div>
-                                                        </div>
-                                                    )}
+                                                        ) : (
+                                                            <div className="space-y-4">
+                                                                <p className="text-sm text-amber-800">Please upload your work for this lesson. Max grade: {assignment.maxGrade}. Due by: {new Date(assignment.dueDate).toLocaleString()}</p>
+                                                                <textarea
+                                                                    placeholder="Add some notes for your teacher (optional)..."
+                                                                    className="w-full border border-amber-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition-all placeholder:text-amber-300"
+                                                                    rows={3}
+                                                                    value={submissionContent[lesson._id] || ''}
+                                                                    onChange={(e) => setSubmissionContent(prev => ({ ...prev, [lesson._id]: e.target.value }))}
+                                                                />
+                                                                <div className="flex flex-col sm:flex-row gap-3">
+                                                                    <input
+                                                                        type="file"
+                                                                        className="flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-amber-100 file:text-amber-700 hover:file:bg-amber-200"
+                                                                        onChange={(e) => setSubmissionFiles(prev => ({ ...prev, [lesson._id]: e.target.files?.[0] || null }))}
+                                                                    />
+                                                                    <button
+                                                                        onClick={() => handleSubmitAssignment(lesson._id, assignment._id)}
+                                                                        disabled={submitting[lesson._id] || (!submissionFiles[lesson._id] && !submissionContent[lesson._id])}
+                                                                        className="px-6 py-2 bg-amber-600 text-white font-bold rounded-full hover:bg-amber-700 transition shadow-lg shadow-amber-600/20 disabled:opacity-50 disabled:shadow-none"
+                                                                    >
+                                                                        {submitting[lesson._id] ? 'Submitting...' : 'Upload Work'}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )
+                                        })()}
                                     </div>
                                 );
                             })}
                         </div>
-                    )}
+                    )
+                    }
                 </div>
             ) : (
                 <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">

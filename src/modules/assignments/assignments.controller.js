@@ -327,7 +327,7 @@ exports.getAssignmentByLesson = async (req, res) => {
             .populate('course', 'title teacher')
             .populate('lesson', 'title')
             .populate('submissions.student', 'username email')
-            .populate('submissions.comments.author', 'username');
+            .populate('submissions.comments.author', 'username role');
 
         if (!assignment) {
             return res.status(404).json({ error: 'No assignment found for this lesson' });

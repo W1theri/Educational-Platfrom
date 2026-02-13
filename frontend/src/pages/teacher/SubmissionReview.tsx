@@ -68,6 +68,7 @@ const SubmissionReview: React.FC = () => {
     const [commentInput, setCommentInput] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [studentInfoById, setStudentInfoById] = useState<Record<string, EnrollmentStudent>>({});
+    const [isEditing, setIsEditing] = useState(false);
 
     const getStudentId = (submission: Submission) =>
         typeof submission.student === 'string' ? submission.student : submission.student._id;
@@ -129,6 +130,7 @@ const SubmissionReview: React.FC = () => {
         setGradeInput(submission.grade?.toString() || '');
         setFeedbackInput(submission.feedback || '');
         setCommentInput('');
+        setIsEditing(submission.grade === null || submission.grade === undefined);
     };
 
     const handleGradeSubmission = async () => {
@@ -209,8 +211,8 @@ const SubmissionReview: React.FC = () => {
                                     key={submission._id}
                                     onClick={() => selectSubmission(submission)}
                                     className={`p-3 rounded-lg border cursor-pointer transition ${selectedSubmission?._id === submission._id
-                                            ? 'bg-indigo-50 border-indigo-300'
-                                            : 'bg-gray-50 border-gray-200 hover:border-indigo-200'
+                                        ? 'bg-indigo-50 border-indigo-300'
+                                        : 'bg-gray-50 border-gray-200 hover:border-indigo-200'
                                         }`}
                                 >
                                     <p className="font-semibold text-gray-900 text-sm">
@@ -290,9 +292,11 @@ const SubmissionReview: React.FC = () => {
                                             <div className="flex justify-between items-start mb-1">
                                                 <p className="text-sm font-semibold text-gray-900">
                                                     {comment.author.username}
-                                                    <span className="ml-2 text-xs font-normal text-gray-500">
-                                                        ({comment.author.role})
-                                                    </span>
+                                                    {comment.author.role && (
+                                                        <span className="ml-2 text-xs font-normal text-gray-500">
+                                                            ({comment.author.role})
+                                                        </span>
+                                                    )}
                                                 </p>
                                                 <p className="text-xs text-gray-500">
                                                     {new Date(comment.createdAt).toLocaleString()}
@@ -322,41 +326,79 @@ const SubmissionReview: React.FC = () => {
 
                             {/* Grading Section */}
                             <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-                                <h3 className="text-lg font-bold text-gray-800 mb-3">Grading</h3>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                            Grade (Max: {assignment.maxGrade})
-                                        </label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max={assignment.maxGrade}
-                                            value={gradeInput}
-                                            onChange={(e) => setGradeInput(e.target.value)}
-                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                            Feedback
-                                        </label>
-                                        <textarea
-                                            rows={3}
-                                            value={feedbackInput}
-                                            onChange={(e) => setFeedbackInput(e.target.value)}
-                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                                            placeholder="Provide feedback for the student..."
-                                        />
-                                    </div>
-                                    <button
-                                        onClick={handleGradeSubmission}
-                                        disabled={submitting || !gradeInput}
-                                        className="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
-                                    >
-                                        {submitting ? 'Submitting...' : 'Submit Grade'}
-                                    </button>
+                                <div className="flex justify-between items-center mb-3">
+                                    <h3 className="text-lg font-bold text-gray-800">Grading</h3>
+                                    {!isEditing && (
+                                        <button
+                                            onClick={() => setIsEditing(true)}
+                                            className="text-sm text-indigo-600 font-bold hover:underline"
+                                        >
+                                            Edit Grade
+                                        </button>
+                                    )}
                                 </div>
+
+                                {!isEditing ? (
+                                    <div className="bg-white p-4 rounded-xl border border-indigo-100">
+                                        <div className="mb-4">
+                                            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Grade</span>
+                                            <p className="text-3xl font-bold text-indigo-600 mt-1">
+                                                {gradeInput} <span className="text-lg text-gray-400 font-medium">/ {assignment.maxGrade}</span>
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Feedback</span>
+                                            <p className="text-gray-700 whitespace-pre-wrap mt-2 text-sm leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                                {feedbackInput || <span className="italic text-gray-400">No feedback provided.</span>}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                                Grade (Max: {assignment.maxGrade})
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max={assignment.maxGrade}
+                                                value={gradeInput}
+                                                onChange={(e) => setGradeInput(e.target.value)}
+                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                                Feedback
+                                            </label>
+                                            <textarea
+                                                rows={3}
+                                                value={feedbackInput}
+                                                onChange={(e) => setFeedbackInput(e.target.value)}
+                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                                                placeholder="Provide feedback for the student..."
+                                            />
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {selectedSubmission.grade !== null && selectedSubmission.grade !== undefined && (
+                                                <button
+                                                    onClick={() => setIsEditing(false)}
+                                                    className="flex-1 bg-white text-gray-600 font-bold py-2 rounded-lg hover:bg-gray-50 transition border border-gray-200"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={handleGradeSubmission}
+                                                disabled={submitting || !gradeInput}
+                                                className="flex-1 bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                                            >
+                                                {submitting ? 'Submitting...' : 'Submit Grade'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ) : (

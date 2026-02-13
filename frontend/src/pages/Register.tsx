@@ -15,6 +15,21 @@ const Register: React.FC = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
+
+        // Basic validation
+        if (password.length < 6) {
+            setError('Password must be at least 6 characters long');
+            setLoading(false);
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            setError('Please enter a valid email address');
+            setLoading(false);
+            return;
+        }
+
         try {
             await api.post('/auth/register', { username, email, password, role });
             navigate('/login');

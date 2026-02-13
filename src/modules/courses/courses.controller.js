@@ -292,6 +292,37 @@ exports.getEnrollment = async (req, res) => {
             return res.status(404).json({ error: 'Enrollment not found' });
         }
 
+        // Lazy update progress to account for newly added lessons
+        const Lesson = require('../../db/models/lesson');
+        const count = await Lesson.countDocuments({ course: req.params.id, isPublished: true });
+
+        if (count > 0) {
+            // Filter out completed lessons that are no longer published or deleted
+            const publishedLessonIds = await Lesson.find({ course: req.params.id, isPublished: true }).distinct('_id');
+            const validCompletedLessons = enrollment.completedLessons.filter(lessonId =>
+                publishedLessonIds.some(id => id.toString() === lessonId.toString())
+            );
+
+            // Update completedLessons if mismatch found
+            if (validCompletedLessons.length !== enrollment.completedLessons.length) {
+                enrollment.completedLessons = validCompletedLessons;
+                enrollment.markModified('completedLessons');
+            }
+
+            const calculatedProgress = Math.round((validCompletedLessons.length / count) * 100);
+            const finalProgress = Math.min(calculatedProgress, 100);
+
+            if (finalProgress !== enrollment.progress) {
+                enrollment.progress = finalProgress;
+                await enrollment.save();
+            } else if (validCompletedLessons.length !== enrollment.completedLessons.length) {
+                await enrollment.save();
+            }
+        } else if (enrollment.progress !== 0) {
+            enrollment.progress = 0;
+            await enrollment.save();
+        }
+
         return res.json(enrollment);
     } catch (err) {
         console.error(err);

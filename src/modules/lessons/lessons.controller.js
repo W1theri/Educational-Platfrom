@@ -276,21 +276,37 @@ exports.toggleLessonCompletion = async (req, res) => {
             return res.status(403).json({ error: 'You are not enrolled in this course' });
         }
 
-        const index = enrollment.completedLessons.indexOf(lessonId);
-        if (index > -1) {
+        // Check if lesson is already completed using string comparison to avoid ObjectId/String mismatch
+        const existingIndex = enrollment.completedLessons.findIndex(id => id.toString() === lessonId.toString());
+
+        if (existingIndex > -1) {
             // Remove if already exists
-            enrollment.completedLessons.splice(index, 1);
+            enrollment.completedLessons.splice(existingIndex, 1);
         } else {
             // Add if not exists
             enrollment.completedLessons.push(lessonId);
         }
+
+        // Enforce uniqueness to prevent data corruption (e.g. 4/3 progress)
+        // Convert to string, distinct, then map back or keep as is (mongoose handles IDs)
+        const uniqueIds = [...new Set(enrollment.completedLessons.map(id => id.toString()))];
+        enrollment.completedLessons = uniqueIds;
 
         // Recalculate progress
         const allLessons = await Lesson.find({ course: lesson.course, isPublished: true });
         const totalLessons = allLessons.length;
 
         if (totalLessons > 0) {
-            enrollment.progress = Math.round((enrollment.completedLessons.length / totalLessons) * 100);
+            // Filter completed lessons to ensure they are valid published lessons
+            const publishedLessonIds = allLessons.map(l => l._id.toString());
+            const validCompletedLessons = enrollment.completedLessons.filter(id => publishedLessonIds.includes(id.toString()));
+
+            if (validCompletedLessons.length !== enrollment.completedLessons.length) {
+                enrollment.completedLessons = validCompletedLessons;
+            }
+
+            const calculatedProgress = Math.round((enrollment.completedLessons.length / totalLessons) * 100);
+            enrollment.progress = Math.min(calculatedProgress, 100);
         } else {
             enrollment.progress = 0;
         }
